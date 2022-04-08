@@ -1,10 +1,8 @@
-const { ApolloServer, gql } = require('apollo-server');
-const { ApolloServerPluginLandingPageGraphQLPlayground } = require('apollo-server-core');
-const { args } = require('commander');
+const { GraphQLServer, PubSub, withFilter } = require("graphql-yoga");
 const { events, locations, participants, users } = require('./data')
 const { nanoid } = require('nanoid')
 
-const typeDefs = gql`
+const typeDefs = `
 type User {
     id:ID!
     username:String!
@@ -121,21 +119,102 @@ type Mutation{
     deleteAllParticipants:DeleteAllOutPut!
 
 }
+type Subscription {
+
+    userCreated: User!
+    userUpdated: User!
+    userDeleted: User!
+
+    eventCreated: Event!
+    eventUpdated: Event!
+    eventDeleted: Event!
+    eventCount: Int!
+
+    participantCreated(event_id: ID): Participant!
+    participantUpdated: Participant!
+    participantDeleted: Participant!
+  }
 
 `;
 
 
 const resolvers = {
+    Subscription: {
+        // User
+        userCreated: {
+            subscribe: (parent, args, { pubsub }) =>
+                pubsub.asyncIterator("userCreated"),
+        },
+        userUpdated: {
+            subscribe: (parent, args, { pubsub }) =>
+                pubsub.asyncIterator("userUpdated"),
+        },
+        userDeleted: {
+            subscribe: (parent, args, { pubsub }) =>
+                pubsub.asyncIterator("userDeleted"),
+        },
+        // Event
+        eventCreated: {
+            subscribe: withFilter(
+                (parent, args, { pubsub }) => pubsub.asyncIterator("eventCreated"),
+                (payload, variables) => {
+                    console.log("payload =>", payload, "variables =>", variables);
+                    return variables.user_id
+                        ? payload.eventCreated.user_id === variables.user_id
+                        : true;
+                }
+            ),
+        },
+        eventUpdated: {
+            subscribe: (parent, args, { pubsub }) =>
+                pubsub.asyncIterator("eventUpdated"),
+        },
+        eventDeleted: {
+            subscribe: (parent, args, { pubsub }) =>
+                pubsub.asyncIterator("eventDeleted"),
+        },
+        eventCount: {
+            subscribe: (parent, args, { pubsub }) => {
+                setTimeout(() => {
+                    pubsub.publish("eventCount", { eventCount: events.length });
+                }, 1000);
+
+                return pubsub.asyncIterator("eventCount");
+            },
+        },
+        // Participant
+        participantCreated: {
+            subscribe: withFilter(
+                (parent, args, { pubsub }) =>
+                    pubsub.asyncIterator("participantCreated"),
+                (payload, variables) => {
+                    console.log("payload =>", payload, "variables =>", variables);
+                    return variables.event_id
+                        ? payload.participantCreated.event_id === variables.event_id
+                        : true;
+                }
+            ),
+        },
+        participantUpdated: {
+            subscribe: (parent, args, { pubsub }) =>
+                pubsub.asyncIterator("participantUpdated"),
+        },
+        participantDeleted: {
+            subscribe: (parent, args, { pubsub }) =>
+                pubsub.asyncIterator("participantDeleted"),
+        },
+    },
     Mutation: {
-        addUser: (parent, { data }) => {
+        addUser: (parent, { data }, { pubsub }) => {
             const user = {
                 id: nanoid(),
                 ...data
             }
             users.push(user)
+            pubsub.publish("userCreated", { userCreated: user });
             return user
         },
-        updateUser: (parent, { id, data }) => {
+        updateUser: (parent, { id, data }, { pubsub }) => {
             const user_index = users.findIndex(user => user.id === id)
             if (user_index === -1) {
                 throw new Error("User not found")
@@ -145,9 +224,10 @@ const resolvers = {
                 ...users[user_index],
                 ...data
             })
+            pubsub.publish("userUpdated", { userUpdated: updated_user });
             return updated_user
         },
-        deleteUser: (parent, { id }) => {
+        deleteUser: (parent, { id }, { pubsub }) => {
             const user_index = users.findIndex(user => user.id === id)
             if (user_index === -1) {
                 throw new Error("User not Found")
@@ -155,6 +235,7 @@ const resolvers = {
 
             const delete_user = users[user_index]
             users.splice(user_index, 1)
+            pubsub.publish("userDeleted", { userDeleted: delete_user });
             return delete_user
         },
         deleteAllUsers: () => {
@@ -164,16 +245,18 @@ const resolvers = {
                 count: length
             }
         },
-        addEvent: (parent, { data }) => {
+        addEvent: (parent, { data }, { pubsub }) => {
             const event = {
                 id: nanoid(),
                 ...data
             }
             events.push(event)
+            pubsub.publish("eventCreated", { eventCreated: event });
+            pubsub.publish("eventCount", { eventCount: events.length });
             return event
 
         },
-        updateEvent: (parent, { id, data }) => {
+        updateEvent: (parent, { id, data }, { pubsub }) => {
             const event_index = events.findIndex(event => event.id === id)
             if (event_index === -1) {
                 throw new Error("Event not found")
@@ -183,10 +266,10 @@ const resolvers = {
                 ...events[event_index],
                 ...data
             })
-
+            pubsub.publish("eventUpdated", { eventUpdated: updated_event });
             return updated_event
         },
-        deleteEvent: (parent, { id }) => {
+        deleteEvent: (parent, { id }, { pubsub }) => {
             const event_index = events.findIndex(event => event.id === id)
             if (event_index === -1) {
                 throw new Error("User not Found")
@@ -194,6 +277,8 @@ const resolvers = {
 
             const delete_event = events[event_index]
             events.splice(event_index, 1)
+            pubsub.publish("eventDeleted", { eventDeleted: delete_event });
+            pubsub.publish("eventCount", { eventCount: events.length });
             return delete_event
         },
         deleteAllEvents: () => {
@@ -241,15 +326,16 @@ const resolvers = {
                 count: length
             }
         },
-        addParticipant: (parent, { data }) => {
+        addParticipant: (parent, { data }, { pubsub }) => {
             const participant = {
                 id: nanoid(),
                 ...data
             }
             participants.push(participant)
+            pubsub.publish("participantCreated", { participantCreated: participant });
             return participant
         },
-        updateParticipant: (parent, { id, data }) => {
+        updateParticipant: (parent, { id, data }, { pubsub }) => {
             const participant_index = participants.findIndex(participant => participant.id === id)
             if (participant_index === -1) {
                 throw new Error("participant not found")
@@ -259,10 +345,10 @@ const resolvers = {
                 ...participants[participant_index],
                 ...data
             })
-
+            pubsub.publish("participantUpdated", { participantUpdated: updated_participant });
             return updated_participant
         },
-        deleteParticipant: (parent, { id }) => {
+        deleteParticipant: (parent, { id }, { pubsub }) => {
             const participant_index = participants.findIndex(participant => participant.id === id)
             if (participant_index === -1) {
                 throw new Error("participant not Found")
@@ -270,6 +356,7 @@ const resolvers = {
 
             const delete_participant = participants[participant_index]
             participants.splice(participant_index, 1)
+            pubsub.publish("participantDeleted", { participantDeleted: delete_participant });
             return delete_participant
         },
         deleteAllParticipants: () => {
@@ -305,17 +392,11 @@ const resolvers = {
     }
 };
 
-const server = new ApolloServer({
+const pubsub = new PubSub();
+
+const server = new GraphQLServer({
     typeDefs,
     resolvers,
-    plugins: [
-        ApolloServerPluginLandingPageGraphQLPlayground({
-            // options
-        })
-    ]
+    context: { pubsub }
 });
-
-// The `listen` method launches a web server.
-server.listen().then(({ url }) => {
-    console.log(`🚀  Server ready at ${url}`);
-});
+server.start(() => console.log("Server is running on localhost:4000"));
