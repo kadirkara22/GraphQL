@@ -1,39 +1,22 @@
 import React from 'react'
-import { List, Avatar, Button, Skeleton } from 'antd';
+import { List, Skeleton } from 'antd';
+import { useQuery } from '@apollo/client';
+import Loading from 'components/Loading';
+import { GET_EVENTS } from './queries'
+import styles from './styles.module.css'
+import { Link } from 'react-router-dom';
 
-const list = [
-    {
-        "gender": "male",
-        "name": {
-            "title": "Mr",
-            "first": "Rodrigo",
-            "last": "Gomes"
-        },
-        "email": "rodrigo.gomes@example.com",
-        "picture": {
-            "large": "https://randomuser.me/api/portraits/men/86.jpg",
-            "medium": "https://randomuser.me/api/portraits/med/men/86.jpg",
-            "thumbnail": "https://randomuser.me/api/portraits/thumb/men/86.jpg"
-        },
-        "nat": "BR"
-    },
-    {
-        "gender": "male",
-        "name": {
-            "title": "Mr",
-            "first": "Rodrigo",
-            "last": "Gomes"
-        },
-        "email": "rodrigo.gomes@example.com",
-        "picture": {
-            "large": "https://randomuser.me/api/portraits/men/86.jpg",
-            "medium": "https://randomuser.me/api/portraits/med/men/86.jpg",
-            "thumbnail": "https://randomuser.me/api/portraits/thumb/men/86.jpg"
-        },
-        "nat": "BR"
-    }
-]
 const Home = () => {
+
+    const { loading, error, data } = useQuery(GET_EVENTS);
+
+    if (loading) {
+        return <Loading />
+    }
+    if (error) {
+        return <div>Error: {error.message}</div>
+    }
+
     return (
         <div>
             <List
@@ -41,15 +24,16 @@ const Home = () => {
                 loading={false}
                 itemLayout="horizontal"
                 //loadMore={loadMore}
-                dataSource={list}
+                dataSource={data.events}
                 renderItem={item => (
                     <List.Item>
                         <Skeleton avatar title={false} loading={item.loading} active>
                             <List.Item.Meta
-                                title={<a href="https://ant.design">{item.name.last}</a>}
-                                description="Ant Design, a design language for background applications, is refined by Ant UED Team"
+                                title={<Link to={`/event/${item.id}`} className={styles.listTitle}>{item.title}</Link>}
+                                description={<Link to={`/event/${item.id}`} className={styles.listItem}>{item.desc.slice(0, 200) + "..."}</Link>}
+                                className={styles.event_content}
                             />
-                            <div>content</div>
+                            <div className={styles.date}>{item.date}</div>
                         </Skeleton>
                     </List.Item>
                 )}
