@@ -821,7 +821,7 @@ const participants = [
     },
 ];
 
-module.exports = {
+export default {
     users,
     events,
     participants,
