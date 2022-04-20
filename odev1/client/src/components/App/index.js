@@ -9,6 +9,7 @@ import Home from 'pages/Home';
 import Event from 'pages/Event';
 import HeaderMenu from 'components/HeaderMenu';
 import PostCounter from 'components/PostCounter';
+import NewEventForm from 'pages/NewPost/NewEventForm';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
 
           <div className={styles.content}>
             <Routes>
+              <Route path="/new" element={<NewEventForm />} />
               <Route path="/" element={<Home />} />
               <Route path="/event/:id" element={<Event />} />
             </Routes>

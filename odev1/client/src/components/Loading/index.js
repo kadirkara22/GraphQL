@@ -7,7 +7,7 @@ const Loading = () => {
 
     return (
         <div className={styles.Loading}>
-            <Spin indicator={antIcon} />
+            <Spin delay={300} indicator={antIcon} />
         </div>
     )
 }

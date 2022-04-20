@@ -51,7 +51,7 @@ const Home = () => {
                                 description={<Link to={`/event/${item.id}`} className={styles.listItem}>{item.desc.slice(0, 200) + "..."}</Link>}
                                 className={styles.event_content}
                             />
-                            <div className={styles.date}>{item.date}</div>
+                            <div className={styles.date}>{new Date(item.date).toLocaleDateString()}</div>
                         </Skeleton>
                     </List.Item>
                 )}
