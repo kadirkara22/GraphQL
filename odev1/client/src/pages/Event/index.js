@@ -24,7 +24,7 @@ const Event = () => {
     if (error) {
         return <div>Error: {error.message}</div>
     }
-    console.log(data.event)
+
     const { event } = data
     return (
         <>
@@ -44,7 +44,7 @@ const Event = () => {
                 <div className={styles.eventParticipants}>
                     {
                         event.participants.map((item, i) => (
-                            <div className={styles.eventOneParticipant}> {item.user.username} </div>
+                            <div key={i} className={styles.eventOneParticipant}> {item.user.username} </div>
                         ))
 
                     }

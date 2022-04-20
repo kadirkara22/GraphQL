@@ -1,0 +1,8 @@
+.headerMenu {
+  background: none !important;
+  border: none !important;
+}
+
+.menuItem {
+  font-weight: bold;
+}

@@ -30,6 +30,10 @@ type Event {
 
 input AddEventInput {
   title: String!
+  desc: String!
+  location_id: String!
+  date: String!
+  user_id: ID!
 }
 
 input UpdateEventInput {

@@ -45,9 +45,9 @@ export const Mutation = {
             id: nanoid(),
             ...data
         }
-        db.events.push(event)
-        pubsub.publish("eventCreated", { eventCreated: event });
-        pubsub.publish("eventCount", { eventCount: events.length });
+        db.events.unshift(event)
+        /*  pubsub.publish("eventCreated", { eventCreated: event });
+         pubsub.publish("eventCount", { eventCount: events.length }); */
         return event
 
     },
@@ -72,8 +72,8 @@ export const Mutation = {
 
         const delete_event = db.events[event_index]
         db.events.splice(event_index, 1)
-        pubsub.publish("eventDeleted", { eventDeleted: delete_event });
-        pubsub.publish("eventCount", { eventCount: events.length });
+        /*  pubsub.publish("eventDeleted", { eventDeleted: delete_event });
+         pubsub.publish("eventCount", { eventCount: events.length }); */
         return delete_event
     },
     deleteAllEvents: (_, __, { db }) => {
