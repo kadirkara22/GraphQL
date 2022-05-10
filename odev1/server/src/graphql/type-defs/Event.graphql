@@ -6,16 +6,16 @@ type Subscription {
 }
 type Mutation {
   addEvent(data: AddEventInput!): Event!
-  updateEvent(id: ID!, data: UpdateEventInput!): Event!
-  deleteEvent(id: ID!): Event!
+  updateEvent(_id: ID!, data: UpdateEventInput!): Event!
+  deleteEvent(_id: ID!): Event!
   deleteAllEvents: DeleteAllOutPut!
 }
 type Query {
   events: [Event!]!
-  event(id: ID!): Event!
+  event(_id: ID!): Event!
 }
 type Event {
-  id: ID!
+  _id: ID!
   title: String!
   desc: String!
   date: String!

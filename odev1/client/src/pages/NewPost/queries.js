@@ -5,7 +5,7 @@ import { gql } from '@apollo/client';
 export const GET_USERS = gql`
 query getAllUsers{
     users{
-      id
+      _id
       username
     }
       }
@@ -14,7 +14,7 @@ query getAllUsers{
 export const GET_LOCATIONS = gql`
 query getAllLocations{
     locations{
-      id
+      _id
       name
     }
       }
@@ -27,7 +27,7 @@ mutation addNewEvent($data:AddEventInput!){
   addEvent(
     data: $data
   ) {
-    id
+    _id
 title
     desc
    

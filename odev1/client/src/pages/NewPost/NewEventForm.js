@@ -45,13 +45,13 @@ const NewEventForm = () => {
                 <Input.TextArea size="large" placeholder="description" disabled={loading} />
             </Form.Item>
             <Form.Item
-                name="location_id"
+                name="location"
                 rules={[{ required: true, message: 'Please select location!' }]}
             >
                 <Select disabled={get_locations_loading || loading} loading={get_locations_loading} placeholder="select your location">
                     {
                         locations_data && locations_data.locations.map((item) =>
-                            <Option key={item.id} value={item.id}>{item.name}</Option>
+                            <Option key={item._id} value={item._id}>{item.name}</Option>
                         )
                     }
 
@@ -64,13 +64,13 @@ const NewEventForm = () => {
                 <DatePicker disabled={loading} />
             </Form.Item>
             <Form.Item
-                name="user_id"
+                name="user"
                 rules={[{ required: true, message: 'Please select user!' }]}
             >
                 <Select disabled={get_users_loading || loading} loading={get_users_loading} placeholder="select your user">
                     {
                         users_data && users_data.users.map((item) =>
-                            <Option key={item.id} value={item.id}>{item.username}</Option>
+                            <Option key={item._id} value={item._id}>{item.username}</Option>
                         )
                     }
 

@@ -89,9 +89,7 @@ export const Mutation = {
         }
     },
     addLocation: async (parent, { data }, { _db }) => {
-        const newLocation = new _db.Location({
-            ...data
-        })
+        const newLocation = new _db.Location(data)
         const location = await newLocation.save()
         return location
     },

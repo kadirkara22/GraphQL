@@ -47,8 +47,8 @@ const Home = () => {
                     <List.Item>
                         <Skeleton avatar title={false} loading={item.loading} active>
                             <List.Item.Meta
-                                title={<Link to={`/event/${item.id}`} className={styles.listTitle}>{item.title}</Link>}
-                                description={<Link to={`/event/${item.id}`} className={styles.listItem}>{item.desc.slice(0, 200) + "..."}</Link>}
+                                title={<Link to={`/event/${item._id}`} className={styles.listTitle}>{item.title}</Link>}
+                                description={<Link to={`/event/${item._id}`} className={styles.listItem}>{item.desc.slice(0, 200) + "..."}</Link>}
                                 className={styles.event_content}
                             />
                             <div className={styles.date}>{new Date(item.date).toLocaleDateString()}</div>
